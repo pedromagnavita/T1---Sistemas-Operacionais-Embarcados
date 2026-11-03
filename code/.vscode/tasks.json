@@ -1,0 +1,23 @@
+﻿{
+  "version": "2.0.0",
+  "windows": {
+    "options": {
+      "shell": {
+        "executable": "cmd.exe",
+        "args": ["/d", "/c"]
+      }
+    }
+  },
+  "tasks": [
+    {
+      "label": "Build PIC24",
+      "type": "shell",
+      "command": "xc16-gcc -mcpu=24FJ128GA010 -omf=elf -Wl,--script=p24FJ128GA010.gld -I inc src/adc.c src/int.c src/kernel.c src/main.c src/mem.c src/message.c src/pwm.c src/scheduler.c src/sync.c src/timer.c src/uart.c src/user_app.c -o firmware.elf && xc16-bin2hex firmware.elf",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
+}

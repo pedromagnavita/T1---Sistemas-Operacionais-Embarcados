@@ -1,0 +1,9 @@
+# Proteus temporary workspace and backup files
+*.workspace
+Project Backups/
+*.pdsbak
+
+# Operating System files
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store

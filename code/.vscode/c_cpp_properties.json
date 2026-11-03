@@ -1,0 +1,23 @@
+{
+  "configurations": [
+    {
+      "name": "XC16",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/inc",
+        "C:/Program Files/Microchip/xc16/**/include",
+        "C:/Program Files/Microchip/xc16/**/include/lega-c",
+        "C:/Program Files/Microchip/xc16/**/support/PIC24F/h",
+        "C:/Program Files/Microchip/xc16/**/support/generic/h"
+      ],
+      "defines": [
+        "__PIC24FJ128GA010__",
+        "__XC16__"
+      ],
+      "compilerPath": "C:/Program Files/Microchip/xc16/v2.10/bin/xc16-gcc.exe",
+      "cStandard": "c99",
+      "intelliSenseMode": "windows-gcc-x86"
+    }
+  ],
+  "version": 4
+}
