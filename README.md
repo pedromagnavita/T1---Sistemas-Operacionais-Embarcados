@@ -10,3 +10,4 @@ Projeto de Sistema Operacional de Tempo Real para microcontrolador PIC24FJ128GA0
   - `src/`: Implementação dos drivers, escalonador, kernel e aplicação (`.c`).
   - `firmware.hex` / `firmware.elf`: Binários compilados para a simulação.
   - `.vscode/`: Configuração de tarefas e compilação no VS Code (XC16).
+
