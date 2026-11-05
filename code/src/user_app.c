@@ -6,24 +6,17 @@
 #include "io.h"
 
 
-// Tick do escalonador: (PR1 + 1) * prescaler 8 / FCY = 2000 * 8 / 4 MHz = 4 ms
+// tick do escalonador = 4 ms
 #define TICK_MS             4
 #define MS_TO_TICKS(ms)     ((ms) / TICK_MS)
 
 
-// ---------------------------------------------------------------------------
-// Recursos compartilhados e de sincronizacao
-// ---------------------------------------------------------------------------
 m_queue_t fila_duty;                    // ADC -> PWM (valor do duty em %)
 sem_t     sem_ack;                      // PWM avisa a ADC que aplicou o duty
 mutex_t   mtx_uart;                     // exclusao mutua no terminal (UART)
 mutex_t   mtx_recurso;                  // protege o recurso compartilhado abaixo
 volatile uint16_t recurso_compartilhado = 0;
 
-
-// ---------------------------------------------------------------------------
-// Funcoes auxiliares
-// ---------------------------------------------------------------------------
 
 // Espera ocupada de ~ms milissegundos de CPU (calibragem aproximada)
 static void busy_ms(uint16_t ms)
@@ -51,15 +44,12 @@ static void log_msg_int(const char *msg, int value)
 }
 
 
-// ---------------------------------------------------------------------------
-// Tarefas
-// ---------------------------------------------------------------------------
 
-// Prioridade ALTA: precisa do recurso que a tarefa BAIXA costuma estar usando.
-// Ao bloquear no mutex, faz a BAIXA herdar a prioridade ALTA.
+// Prioridade alta: precisa do recurso que a tarefa baixa costuma estar usando.
+// Ao bloquear no mutex, faz a baixa herdar a prioridade alta.
 TASK tarefa_alta(void)
 {
-    task_delay(MS_TO_TICKS(200));       // deixa a BAIXA pegar o mutex primeiro
+    task_delay(MS_TO_TICKS(200));       // deixa a baixa pegar o mutex primeiro
 
     while (1) {
         log_msg("[ALTA] quer o recurso");
@@ -73,7 +63,7 @@ TASK tarefa_alta(void)
     }
 }
 
-// Prioridade MEDIA (A e B): mesma prioridade, ficam sempre prontas ao mesmo
+// Prioridade média (A e B): mesma prioridade, ficam sempre prontas ao mesmo
 // tempo e se revezam por Round-Robin. Tambem ocupam a CPU, o que causaria
 // inversao de prioridade sem a heranca.
 TASK tarefa_rr_a(void)
@@ -143,8 +133,8 @@ TASK tarefa_pwm(void)
     }
 }
 
-// Prioridade BAIXA: segura o mutex por muito tempo. Quando a ALTA bloqueia
-// esperando por ele, esta tarefa herda a prioridade ALTA ate liberar o mutex.
+// Prioridade baixa: segura o mutex por muito tempo. Quando a alta bloqueia
+// esperando por ele, esta tarefa herda a prioridade alta ate liberar o mutex.
 // Os logs sao feitos fora da secao critica, depois do unlock.
 TASK tarefa_baixa(void)
 {

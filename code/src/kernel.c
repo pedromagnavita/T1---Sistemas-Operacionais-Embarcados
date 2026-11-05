@@ -6,7 +6,7 @@
 #include <xc.h>
 #include "mem.h"
 
-// Vari�veis globais
+// Variáveis globais
 queue_t ReadyQueue;
 uint8_t task_running = 0;
 uint16_t *task_running_tos = NULL;
@@ -34,9 +34,8 @@ void os_start_scheduler(void)
 
 void create_task(callback task, uint8_t prior)
 {
-    tcb_t *new_task = &ReadyQueue.tasks[ReadyQueue.queue_size];
+    tcb_t *new_task = &ReadyQueue.tasks[ReadyQueue.queue_size]; // pega o ponteiro para a TCB da nova tarefa
     
-    // Preencher a tcb
     new_task->task_id       = ReadyQueue.queue_size+1;
     new_task->task_func     = task;
     new_task->task_prior    = prior;
@@ -44,15 +43,14 @@ void create_task(callback task, uint8_t prior)
     new_task->task_state    = READY;
     new_task->task_delay    = 0;
     #if DYNAMIC_ALLOCATION == ON
-    // Aloca a pilha da tarefa no heap do RTOS
-    new_task->task_stack = (uint16_t *)os_malloc(MAX_STACK_SIZE * sizeof(uint16_t));
-    if (new_task->task_stack == NULL) {
-        return; // sem memoria: tarefa nao e criada
+    new_task->task_stack = (uint16_t *)os_malloc(MAX_STACK_SIZE * sizeof(uint16_t)); // aloca a pilha dinamicamente
+    if (new_task->task_stack == NULL) { // evitar falha de alocação
+        return; 
     }
     #endif
 
     // Ajustar o SP
-    new_task->sp            = &new_task->task_stack[0];
+    new_task->sp            = &new_task->task_stack[0]; // aponta para o topo da pilha
     
     // Inicializar a pilha
     init_stack(new_task);
@@ -73,7 +71,7 @@ void init_stack(tcb_t *task)
     *sp++ = pc_low;
     *sp++ = pc_high;
     
-    // Inicializar os Ws (W0 at� W14)
+    // Inicializar os Ws (W0 até W14)
     for (int i = 0; i < 15; i++) {
         *sp++ = 0x0000;
     }
@@ -125,8 +123,7 @@ void delay_release()
 
 uint8_t task_get_priority(void)
 {
-    // Prioridade efetiva (inclui heranca) da tarefa em execucao
-    return ReadyQueue.tasks[task_running].task_prior;
+    return ReadyQueue.tasks[task_running].task_prior; // retorna a prioridade efetiva da tarefa em execução
 }
 
 TASK idle()

@@ -42,28 +42,22 @@ uint8_t rr_scheduler()
 
 uint8_t prior_scheduler()
 {
-    uint8_t candidate = task_running;
+    uint8_t candidate = task_running; //task que saiu da CPU
     uint8_t best = 0xFF;
 
-    // Percorre a fila circularmente a partir da tarefa seguinte a que estava
-    // rodando. A tarefa que estava rodando e a ultima a ser examinada.
-    for (uint8_t i = 0; i < ReadyQueue.queue_size; i++) {
-        candidate = __builtin_modsd(candidate+1, ReadyQueue.queue_size);
+    for (uint8_t i = 0; i < ReadyQueue.queue_size; i++) { 
+        candidate = __builtin_modsd(candidate+1, ReadyQueue.queue_size); //percorre a partir de task_running + 1
 
         if (ReadyQueue.tasks[candidate].task_state != READY) {
-            continue;
+            continue; // ignora tarefas que não estão prontas
         }
 
-        // '>' estrito: em empate vence a primeira encontrada apos a atual,
-        // o que produz o revezamento Round-Robin entre prioridades iguais.
-        if (best == 0xFF ||
+        if (best == 0xFF || 
             ReadyQueue.tasks[candidate].task_prior > ReadyQueue.tasks[best].task_prior) {
-            best = candidate;
+            best = candidate; // atualiza a maior prioridade encontrada, se empatar, fica com a primeira encontrada
         }
     }
-
-    // Nenhuma tarefa pronta: executa a idle (sempre no indice 0)
-    if (best == 0xFF) {
+    if (best == 0xFF) { // se não encontrou nenhuma tarefa pronta, retorna a idle
         return 0;
     }
 

@@ -4,90 +4,78 @@
 #include <stdio.h>
 
 
-uint8_t heap_mem[HEAP_SIZE] __attribute__((aligned(2)));
+uint8_t heap_mem[HEAP_SIZE] __attribute__((aligned(2))); // PIC24 exige acesso par
 
 
 void os_heap_init(void)
 {
     block_info_t *blk_info = (block_info_t *)heap_mem;
 
-    blk_info->size = HEAP_SIZE - sizeof(block_info_t);
+    blk_info->size = HEAP_SIZE - sizeof(block_info_t); 
     blk_info->free = 1;
 }
 
 void *os_malloc(uint16_t nr_bytes)
 {
-    uint8_t *heap_ptr   = heap_mem;
-    uint8_t *heap_end   = heap_mem + HEAP_SIZE;
+    uint8_t *heap_ptr   = heap_mem; 
+    uint8_t *heap_end   = heap_mem + HEAP_SIZE; 
 
     if (nr_bytes == 0)
         return NULL;
 
-    // Arredonda para par: a PIC24 exige acesso alinhado a 16 bits
-    nr_bytes = (nr_bytes + 1) & ~1;
+    nr_bytes = (nr_bytes + 1) & ~1; //arredondamento para ser par
 
-    while (heap_ptr + sizeof(block_info_t) <= heap_end) {
-
+    while (heap_ptr + sizeof(block_info_t) <= heap_end) { 
         block_info_t *blk_info = (block_info_t *)heap_ptr;
 
-        // Verifica se o bloco È grande o suficiente para a nova alocaÁ„o
-        if (blk_info->free && blk_info->size >= nr_bytes) {
+        // Verifica se o bloco √© grande o suficiente para a nova aloca√ß√£o
+        if (blk_info->free && blk_info->size >= nr_bytes) { // procurar primeiro bloco vi√°vel
 
             uint16_t remaining = blk_info->size - nr_bytes;
 
-            // Verifica se È possÌvel criar um novo bloco
             if (remaining > sizeof(block_info_t)) {
 
-                block_info_t *new_blk_info = (block_info_t *)(heap_ptr + sizeof(block_info_t) + nr_bytes);
-                new_blk_info->size = remaining - sizeof(block_info_t);
-                new_blk_info->free = 1;
+                block_info_t *new_blk_info = (block_info_t *)(heap_ptr + sizeof(block_info_t) + nr_bytes); // cria um novo bloco com o espa√ßo restante
+                new_blk_info->size = remaining - sizeof(block_info_t); // atualiza o tamanho do novo bloco
+                new_blk_info->free = 1; // marca o novo bloco como livre
 
                 blk_info->size = nr_bytes;
             }
 
-            // Marca o bloco como ocupado
             blk_info->free = 0;
 
-            // Retorna somente a ·rea de dados
-            return heap_ptr + sizeof(block_info_t);
+            return heap_ptr + sizeof(block_info_t); // endere√ßo dos dados alocados
         }
-
-        // Passa para o prÛximo bloco
-        heap_ptr += sizeof(block_info_t) + blk_info->size;
+        heap_ptr += sizeof(block_info_t) + blk_info->size; // Avan√ßa para o pr√≥ximo bloco
     }
 
-    // N„o encontrou espaÁo
     return NULL;
 }
 
-void os_free(void *address)
+void os_free(void *address) //address aponta pros dados do bloco
 {
     if (address == NULL)
         return;
 
-    block_info_t *blk_info = (block_info_t *)((uint8_t *)address - sizeof(block_info_t));
+    block_info_t *blk_info = (block_info_t *)((uint8_t *)address - sizeof(block_info_t)); // achar o cabe√ßalho
 
     blk_info->free = 1;
 
-    // Junta blocos livres adjacentes para reduzir a fragmentacao externa
     uint8_t *heap_ptr = heap_mem;
     uint8_t *heap_end = heap_mem + HEAP_SIZE;
 
-    while (heap_ptr + sizeof(block_info_t) <= heap_end) {
+    while (heap_ptr + sizeof(block_info_t) <= heap_end) { // verifica se ainda tem cabecalho de bloco para ler
 
         block_info_t *curr = (block_info_t *)heap_ptr;
-        uint8_t *next_ptr  = heap_ptr + sizeof(block_info_t) + curr->size;
+        uint8_t *next_ptr  = heap_ptr + sizeof(block_info_t) + curr->size; // calcula o endere√ßo do pr√≥ximo bloco
 
         if (next_ptr + sizeof(block_info_t) <= heap_end) {
 
             block_info_t *next = (block_info_t *)next_ptr;
 
             if (curr->free && next->free) {
-                // Absorve o proximo bloco (dados + cabecalho) no bloco atual
-                curr->size += sizeof(block_info_t) + next->size;
-
-                // Nao avanca: o novo bloco pode se juntar ao seguinte tambem
-                continue;
+                curr->size += sizeof(block_info_t) + next->size; // junta os blocos livres
+                continue; // n√£o avan√ßa o ponteiro para verificar se h√° mais blocos livres consecutivos
             }
         }
 
