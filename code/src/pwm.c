@@ -10,7 +10,7 @@ void pwm_config(pwm_driver_t *pwm, uint16_t frequencia)
     pwm->ciclo      = 0;
     pwm->status     = false;
     
-    // Configuração de hardware
+    // Configuracao de hardware
     TRISDbits.TRISD0  = 0;      // Pino RD0/OC1 como saida
     OC1CON            = 0;    
     T2CON             = 0;
@@ -19,7 +19,7 @@ void pwm_config(pwm_driver_t *pwm, uint16_t frequencia)
     
     T2CONbits.TCKPS   = 0;      // Preescaler 1:1
 
-    // Cálculo do período (PR2 = (Fcy / fPwm)-1)
+    // Calculo do periodo (PR2 = (Fcy / fPwm)-1)
     pwm->periodo      = (FCY / frequencia) -1;
     
     OC1R    = 0;

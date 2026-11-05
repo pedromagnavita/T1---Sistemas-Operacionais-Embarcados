@@ -3,7 +3,7 @@
 #include <xc.h>
 
 
-// Variáveis globais
+// Variaveis globais
 extern queue_t ReadyQueue;
 extern uint8_t task_running;
 extern uint16_t *task_running_tos;
@@ -92,7 +92,7 @@ void mutex_unlock(mutex_t *m)
         tcb_t *me = &ReadyQueue.tasks[task_running];
         uint8_t reschedule = 0;
 
-        // Restaura a prioridade original da dona (fim da heranca)
+        // Restaura a prioridade original da dona
         if (me->task_prior != me->task_base_prior) {
             me->task_prior = me->task_base_prior;
             reschedule = 1;
@@ -102,7 +102,7 @@ void mutex_unlock(mutex_t *m)
             uint8_t best = 0, next;
 
             // Escolhe a tarefa de maior prioridade entre as que esperam
-            // ('>' estrito: em empate vence a que chegou primeiro)
+            // ('>' estrito: em empate Ã© FIFO)
             for (uint8_t i = 1; i < m->wait_count; i++) {
                 if (ReadyQueue.tasks[m->wait_queue[i]].task_prior >
                     ReadyQueue.tasks[m->wait_queue[best]].task_prior) {

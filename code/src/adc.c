@@ -7,7 +7,7 @@ void adc_init(void)
     // Desliga o modulo durante a configuracao
     AD1CON1bits.ADON = 0;
 
-    AD1PCFG = 0xFFFF;               // Todos os pinos digitais (cada canal e ativado em adc_config_channel)
+    AD1PCFG = 0xFFFF;               // Todos os pinos digitais
 
     AD1CON1bits.FORM = 0b00;        // Resultado inteiro (0 a 1023)
     AD1CON1bits.SSRC = 0b111;       // Fim da amostragem inicia a conversao automaticamente
@@ -37,9 +37,9 @@ uint16_t adc_read(uint8_t channel)
     AD1CHSbits.CH0SA = channel;     // Seleciona o canal analogico
 
     AD1CON1bits.DONE = 0;
-    AD1CON1bits.SAMP = 1;           // Inicia a amostragem; a conversao comeca sozinha (SSRC = 111)
+    AD1CON1bits.SAMP = 1;           // Inicia a amostragem. A conversao comeca sozinha (SSRC = 111)
 
-    while (!AD1CON1bits.DONE);      // Aguarda o fim da conversao (alguns microssegundos)
+    while (!AD1CON1bits.DONE);      // Aguarda o fim da conversao
 
     return ADC1BUF0;
 }

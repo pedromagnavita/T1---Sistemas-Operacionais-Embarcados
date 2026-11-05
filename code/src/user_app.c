@@ -18,7 +18,6 @@ mutex_t   mtx_recurso;                  // protege o recurso compartilhado abaix
 volatile uint16_t recurso_compartilhado = 0;
 
 
-// Espera ocupada de ~ms milissegundos de CPU (calibragem aproximada)
 static void busy_ms(uint16_t ms)
 {
     while (ms--) {
@@ -26,7 +25,7 @@ static void busy_ms(uint16_t ms)
     }
 }
 
-// Log na UART protegido por mutex (uma linha nunca se mistura com outra)
+// Log na UART protegido por mutex
 static void log_msg(const char *msg)
 {
     mutex_lock(&mtx_uart);
@@ -45,8 +44,6 @@ static void log_msg_int(const char *msg, int value)
 
 
 
-// Prioridade alta: precisa do recurso que a tarefa baixa costuma estar usando.
-// Ao bloquear no mutex, faz a baixa herdar a prioridade alta.
 TASK tarefa_alta(void)
 {
     task_delay(MS_TO_TICKS(200));       // deixa a baixa pegar o mutex primeiro
@@ -63,9 +60,6 @@ TASK tarefa_alta(void)
     }
 }
 
-// Prioridade média (A e B): mesma prioridade, ficam sempre prontas ao mesmo
-// tempo e se revezam por Round-Robin. Tambem ocupam a CPU, o que causaria
-// inversao de prioridade sem a heranca.
 TASK tarefa_rr_a(void)
 {
     task_delay(MS_TO_TICKS(100));
@@ -94,8 +88,7 @@ TASK tarefa_rr_b(void)
     }
 }
 
-// Produtora: le o ADC (API de E/S), converte para duty (0 a 100 %) e envia pela
-// fila de mensagens. Depois espera o semaforo, avisando que o PWM foi atualizado.
+// Produtora: le o ADC (API de E/S), converte para duty (0 a 100 %) e envia pela fila de mensagens. Depois espera o semaforo, avisando que o PWM foi atualizado.
 TASK tarefa_adc(void)
 {
     uint16_t leitura;
@@ -133,9 +126,6 @@ TASK tarefa_pwm(void)
     }
 }
 
-// Prioridade baixa: segura o mutex por muito tempo. Quando a alta bloqueia
-// esperando por ele, esta tarefa herda a prioridade alta ate liberar o mutex.
-// Os logs sao feitos fora da secao critica, depois do unlock.
 TASK tarefa_baixa(void)
 {
     uint8_t prior_inicio, prior_durante;
